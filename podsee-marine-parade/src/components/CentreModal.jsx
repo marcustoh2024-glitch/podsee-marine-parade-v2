@@ -7,60 +7,76 @@ import LanguageIcon from '@mui/icons-material/Language';
 export default function CentreModal({ centre, open, onClose }) {
   if (!centre) return null;
 
-  // Helper function to send tracking data to Google Sheets
-  const trackClick = async (type, destinationUrl) => {
+  // Direct Ping Click Tracking
+  const trackClick = async (type, destination) => {
     const webhookUrl = import.meta.env.VITE_CLICK_LOG_WEBHOOK_URL;
+    
+    // Diagnostic logging
+    console.log('🔍 Click Tracking Debug:', {
+      clickType: type,
+      destination: destination,
+      webhookUrl: webhookUrl ? '✅ Configured' : '❌ Missing',
+      centreName: centre.name
+    });
+    
     if (!webhookUrl) {
-      console.warn('Tracking Webhook URL not configured');
+      console.warn('⚠️ VITE_CLICK_LOG_WEBHOOK_URL not configured');
       return;
     }
 
-    const logData = {
+    const trackingData = {
       centreName: centre.name || 'unknown',
       clickType: type,
-      destinationUrl: destinationUrl,
+      destinationUrl: destination,
       sourcePage: window.location.href,
       userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
+    console.log('📤 Sending tracking payload:', trackingData);
+
     try {
-      // Use "keepalive" to ensure the request finishes even if the page starts to navigate
-      fetch(webhookUrl, {
+      await fetch(webhookUrl, {
         method: 'POST',
-        mode: 'no-cors', // Google Apps Script requires no-cors for simple POST
+        mode: 'no-cors',
+        keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(logData),
-        keepalive: true
+        body: JSON.stringify(trackingData)
       });
-    } catch (err) {
-      console.error('Tracking failed:', err);
+      console.log('✅ Tracking request sent (no-cors mode - cannot verify response)');
+    } catch (error) {
+      console.error('❌ Click tracking failed:', error);
     }
   };
 
   const handlePrimaryAction = () => {
     const number = centre.whatsappNumber?.toString().replace(/\s/g, '');
-    if (!number) return;
-
-    const isWhatsApp = centre.contactType === 'Whatsapp';
-    const type = isWhatsApp ? 'WhatsApp' : 'Call';
-    const destination = isWhatsApp ? `https://wa.me/${number}` : `tel:${number}`;
+    let destination = '';
+    let clickType = '';
     
-    // 1. Send the tracking ping
-    trackClick(type, destination);
+    if (centre.contactType === 'Whatsapp' && number) {
+      destination = `https://wa.me/${number}`;
+      clickType = 'WhatsApp';
+    } else if (centre.contactType === 'LandLine' && number) {
+      destination = `tel:${number}`;
+      clickType = 'Phone';
+    } else if (number) {
+      // Fallback: use whatever number exists
+      destination = `tel:${number}`;
+      clickType = 'Phone';
+    }
     
-    // 2. Wait 100ms for the ping to initiate, then open
-    setTimeout(() => {
-      window.open(destination, '_blank');
-    }, 100);
+    if (destination) {
+      trackClick(clickType, destination);
+      setTimeout(() => {
+        window.open(destination, '_blank');
+      }, 100);
+    }
   };
 
   const handleWebsiteClick = () => {
     if (centre.websiteUrl) {
-      // 1. Send the tracking ping
       trackClick('Website', centre.websiteUrl);
-      
-      // 2. Wait 100ms for the ping to initiate, then open
       setTimeout(() => {
         window.open(centre.websiteUrl, '_blank');
       }, 100);
