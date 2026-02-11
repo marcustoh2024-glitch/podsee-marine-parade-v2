@@ -7,29 +7,68 @@ import LanguageIcon from '@mui/icons-material/Language';
 export default function CentreModal({ centre, open, onClose }) {
   if (!centre) return null;
 
+  // Direct Ping Click Tracking
+  const trackClick = async (type, destination) => {
+    const webhookUrl = import.meta.env.VITE_CLICK_LOG_WEBHOOK_URL;
+    
+    if (!webhookUrl) {
+      console.warn('VITE_CLICK_LOG_WEBHOOK_URL not configured');
+      return;
+    }
+
+    const trackingData = {
+      centreName: centre.name || 'unknown',
+      clickType: type,
+      destinationUrl: destination,
+      sourcePage: window.location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(trackingData)
+      });
+    } catch (error) {
+      console.error('Click tracking failed:', error);
+    }
+  };
+
   const handlePrimaryAction = () => {
     const number = centre.whatsappNumber?.toString().replace(/\s/g, '');
     let destination = '';
+    let clickType = '';
     
     if (centre.contactType === 'Whatsapp' && number) {
       destination = `https://wa.me/${number}`;
+      clickType = 'WhatsApp';
     } else if (centre.contactType === 'LandLine' && number) {
       destination = `tel:${number}`;
+      clickType = 'Phone';
     } else if (number) {
       // Fallback: use whatever number exists
       destination = `tel:${number}`;
+      clickType = 'Phone';
     }
     
     if (destination) {
-      const trackingUrl = `/api/r?centreId=${encodeURIComponent(centre.name)}&to=${encodeURIComponent(destination)}`;
-      window.open(trackingUrl, '_blank');
+      trackClick(clickType, destination);
+      setTimeout(() => {
+        window.open(destination, '_blank');
+      }, 100);
     }
   };
 
   const handleWebsiteClick = () => {
     if (centre.websiteUrl) {
-      const trackingUrl = `/api/r?centreId=${encodeURIComponent(centre.name)}&to=${encodeURIComponent(centre.websiteUrl)}`;
-      window.open(trackingUrl, '_blank');
+      trackClick('Website', centre.websiteUrl);
+      setTimeout(() => {
+        window.open(centre.websiteUrl, '_blank');
+      }, 100);
     }
   };
 
