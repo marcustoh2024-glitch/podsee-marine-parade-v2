@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
+import CommentSection from './CommentSection';
 
 export default function CentreModal({ centre, open, onClose }) {
   if (!centre) return null;
@@ -11,16 +12,8 @@ export default function CentreModal({ centre, open, onClose }) {
   const trackClick = async (type, destination) => {
     const webhookUrl = import.meta.env.VITE_CLICK_LOG_WEBHOOK_URL;
     
-    // Diagnostic logging
-    console.log('🔍 Click Tracking Debug:', {
-      clickType: type,
-      destination: destination,
-      webhookUrl: webhookUrl ? '✅ Configured' : '❌ Missing',
-      centreName: centre.name
-    });
-    
     if (!webhookUrl) {
-      console.warn('⚠️ VITE_CLICK_LOG_WEBHOOK_URL not configured');
+      console.warn('VITE_CLICK_LOG_WEBHOOK_URL not configured');
       return;
     }
 
@@ -33,8 +26,6 @@ export default function CentreModal({ centre, open, onClose }) {
       timestamp: new Date().toISOString()
     };
 
-    console.log('📤 Sending tracking payload:', trackingData);
-
     try {
       await fetch(webhookUrl, {
         method: 'POST',
@@ -43,9 +34,8 @@ export default function CentreModal({ centre, open, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(trackingData)
       });
-      console.log('✅ Tracking request sent (no-cors mode - cannot verify response)');
     } catch (error) {
-      console.error('❌ Click tracking failed:', error);
+      console.error('Click tracking failed:', error);
     }
   };
 
@@ -87,8 +77,21 @@ export default function CentreModal({ centre, open, onClose }) {
   const hasWebsite = centre.websiteUrl;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column'
+        }
+      }}
+    >
+      {/* Header - Fixed at top */}
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <Typography variant="h6" component="div">
           {centre.name}
         </Typography>
@@ -97,7 +100,8 @@ export default function CentreModal({ centre, open, onClose }) {
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
+      {/* Centre Info - Fixed at top */}
+      <DialogContent sx={{ flexShrink: 0, pb: 0 }}>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body1" color="text.secondary">
             {centre.address}
@@ -108,7 +112,8 @@ export default function CentreModal({ centre, open, onClose }) {
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2, gap: 1, display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}>
+      {/* Action Buttons - Fixed at top */}
+      <DialogActions sx={{ px: 3, pb: 2, gap: 1, display: 'flex', justifyContent: 'stretch', alignItems: 'stretch', flexShrink: 0 }}>
         {hasPrimaryAction && (
           <Button
             variant="contained"
@@ -131,6 +136,11 @@ export default function CentreModal({ centre, open, onClose }) {
           </Button>
         )}
       </DialogActions>
+
+      {/* Comment Section - Flexible height with internal scrolling */}
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <CommentSection centre={centre} />
+      </Box>
     </Dialog>
   );
 }

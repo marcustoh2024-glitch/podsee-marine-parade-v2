@@ -1,0 +1,17 @@
+# Copy and paste these EXACT values into Vercel Environment Variables
+# Go to: Vercel Dashboard → Your Project → Settings → Environment Variables
+
+VITE_SUPABASE_URL=https://zeekhdsgsxulkjlcuhdx.supabase.co
+
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplZWtoZHNnc3h1bGtqbGN1aGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NzYyMTEsImV4cCI6MjA4NjQ1MjIxMX0.sp0Hb1lXJl-Uf6uBubDISs5sS3u1gg-JgtLjZESsRiU
+
+VITE_SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplZWtoZHNnc3h1bGtqbGN1aGR4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDg3NjIxMSwiZXhwIjoyMDg2NDUyMjExfQ.R0YVcf6vnjbqdYfFOKpRqKBKK8AQIG8WtoZ6sT7AJvs
+
+VITE_ADMIN_SECRET=your_secure_admin_password_here
+
+VITE_GOOGLE_MAPS_API_KEY=AIzaSyDBqrTEgYxjfAB9xN3xR-L_BCqlnbWmFpg
+
+VITE_CLICK_LOG_WEBHOOK_URL=https://script.google.com/macros/s/AKfycbxUNSYw7VsiNZVf22e0ljg3nzYY-JUmQ7TccyeH2ICMlb-BhiylgFXRMwdn53WL1FdvaA/exec
+
+# IMPORTANT: Change VITE_ADMIN_SECRET to your own secure password!
+# Example: VITE_ADMIN_SECRET=MySecurePassword123!
